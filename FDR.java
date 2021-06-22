@@ -1,6 +1,6 @@
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ public class FDR {
      * @param filePath The relative path of the P-Values file.
      * @return The respective P-Values.
      */
-    public void ReadTargetFile(String filePath) {
+    public List<Vec2<String, Double>> ReadTargetFile(String filePath) {
         BufferedReader br = null;
         String[] aCurrentLine;
         String sCurrentLine;
@@ -46,6 +46,8 @@ public class FDR {
         } catch (IOException exc) {
             exc.printStackTrace();
         }
+
+        return p_values;
     }
 
     /**
@@ -76,6 +78,26 @@ public class FDR {
     }
 
     /**
+     * Write a specific file with the adjusted P-Values of some statistical significant tests from memory.
+     * @param filePath The relative path of the adjusted P-Values file.
+     * @param P_values The respective P-Values.
+     */
+    public void WriteTargetFile(String filePath, List<Vec2<String, Double>> P_values) {
+
+        String content = "";
+
+        try {
+            FileWriter myWriter = new FileWriter(filePath);
+            for(int i = 0; i < P_values.size(); i++)
+                content += P_values.get(i).getTValue() + " " + P_values.get(i).getYValue() + "\n";
+            myWriter.write(content);
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Get minimum value within an array of numbers.
      * @param array An array of numerical values to get the minimum.
      * @param start The position to start within the array looking for the mimimum value.
@@ -90,18 +112,16 @@ public class FDR {
     }
 
     /**
-     * Main function.
+     * Main function (may be adjusted respectively).
      */
     public static void main(String[] args) {
-        FDR run = new FDR();
-        List<Vec2<String, Double>> hello = new ArrayList<Vec2<String, Double>>();
-        double[] hello2 = new double[10];
-        for(int i = 0; i < 10; i++) {
-            hello.add(new Vec2<String, Double>(("elem " + i), (10-i/1.0)));
-            hello2[i] = i;
+        String base = "C:\\Users\\georg\\Documents\\IdeaProjects\\FalseDiscoveryRate";
+        String[] tests = {"Ttests1.txt", "FTests1.txt", "UTests1.txt", "Ttests2.txt", "FTests2.txt", "UTests2.txt"};
+        for(int i = 0; i < tests.length; i++) {
+            FDR run = new FDR();
+            List<Vec2<String, Double>> P_values = run.ReadTargetFile(base + "\\input\\" + tests[i]);
+            List<Vec2<String, Double>> adjusted_P_values = run.adjust(P_values);
+            run.WriteTargetFile(base + "\\output\\adj_" + tests[i], adjusted_P_values);
         }
-//        run.adjust(hello);
-        System.out.println(run.getMin(hello2, 0));
-        System.out.println(run.getMin(hello2, 5));
     }
 }
